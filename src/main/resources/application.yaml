@@ -1,0 +1,13 @@
+spring:
+  rabbitmq:
+    publisher-confirms: true
+    publisher-returns: true
+    publisher-confirm-type: CORRELATED
+    template:
+      mandatory: true
+
+    username: "***"
+    password: "***"
+
+    host: localhost
+    port: 5673

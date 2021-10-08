@@ -1,0 +1,87 @@
+Работаем в директории helm
+Создание namespace
+======================================================================================================================
+
+kubectl create namespace nginx-controller
+kubectl create namespace eventbus
+kubectl create namespace metallb-system
+
+======================================================================================================================
+
+
+Установка nginx ingress и metallb
+======================================================================================================================
+1. Установка nginx ingress controller
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace nginx-controller
+
+Проверяем корректность установки
+kubectl get pods --namespace nginx-controller
+Результат
+NAME                                        READY   STATUS    RESTARTS   AGE
+ingress-nginx-controller-748d8ff6c7-xg6hf   1/1     Running   0          33m
+
+
+2. Установка metallb
+cd metallb
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb -f values.yaml --namespace metallb-system
+cd ..
+
+Проверяем корректность установки
+kubectl get pods --namespace metallb-system
+Результат
+NAME                                  READY   STATUS    RESTARTS   AGE
+metallb-controller-748756655f-fmq7z   1/1     Running   0          88s
+metallb-speaker-flwxb                 1/1     Running   0          88s
+
+
+Результат - HTTP трафик может поступать в кластер minikube через LoadBalancer services
+======================================================================================================================
+
+Установка кластера rabbitmq
+======================================================================================================================
+1. Установить cluster operator
+kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+
+2. Установить topology operator
+2.1 Установка cert-manager
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.yaml
+2.2 Установка оператора
+kubectl apply -f https://github.com/rabbitmq/messaging-topology-operator/releases/latest/download/messaging-topology-operator-with-certmanager.yaml
+
+Результат - развернуты CRD RabbitMQ
+
+3. Развертывание кластера RabbitMQ
+3.1 Создание кластера и очередей
+helm install rabbitmq rabbitmq --namespace eventbus
+3.2 Создание пользователей
+kubectl apply -f ./rabbitmq/rabbitmqUsers.yaml --namespace eventbus
+======================================================================================================================
+
+Развертывание ядра Istio (istiod)
+======================================================================================================================
+curl -L https://istio.io/downloadIstio | sh -
+cd istio-1.11.3
+export PATH=$PWD/bin:$PATH
+istioctl x precheck
+istioctl install --set profile=minimal -y --set meshConfig.accessLogFile=/dev/stdout
+istioctl operator init --watchedNamespaces=eventbus
+cd ..
+
+Развертывание istio ingress и egress в пространство eventbus
+kubectl label namespace eventbus istio-injection=enabled
+kubectl apply -f ./istio-gateway/istioGateway.yaml --namespace eventbus
+
+kubectl get svc --namespace eventbus
+======================================================================================================================
+
+7. Получение доступа к админстративной консоли RabbitMQ
+В отельной консоли запустить
+kubectl port-forward service/eventbus-ingressgateway-service 15673:80 --namespace eventbus
+
+Результат
+В браузере зайти на http://localhost:15673/
+Будет отображена стартовая страница консоли RabbitMQ
+

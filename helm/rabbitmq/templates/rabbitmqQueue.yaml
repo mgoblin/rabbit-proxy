@@ -1,0 +1,25 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: rq1 # name of this custom resource; does not have to the same as the actual queue name
+  namespace: eventbus
+spec:
+  name: rq1 # name of the queue
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster1
+
+---
+
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: rs1 # name of this custom resource; does not have to the same as the actual queue name
+  namespace: eventbus
+spec:
+  name: rq2 # name of the queue
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster1
