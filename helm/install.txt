@@ -1,43 +1,52 @@
 Работаем в директории helm
 Создание namespace
 ======================================================================================================================
-
-kubectl create namespace nginx-controller
 kubectl create namespace eventbus
-kubectl create namespace metallb-system
-
 ======================================================================================================================
 
 
 Установка nginx ingress и metallb
 ======================================================================================================================
-1. Установка nginx ingress controller
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-helm install ingress-nginx ingress-nginx/ingress-nginx --namespace nginx-controller
-
-Проверяем корректность установки
-kubectl get pods --namespace nginx-controller
+Ставим metallb
+minikube addons enable metallb
+Проверка
+kubectl get pods -n metallb-system
 Результат
-NAME                                        READY   STATUS    RESTARTS   AGE
-ingress-nginx-controller-748d8ff6c7-xg6hf   1/1     Running   0          33m
+NAME                          READY   STATUS    RESTARTS   AGE
+controller-66bc445b99-kls54   1/1     Running   0          6m12s
+speaker-plzcg                 1/1     Running   0          6m12s
 
-
-2. Установка metallb
-cd metallb
-helm repo add metallb https://metallb.github.io/metallb
-helm install metallb metallb/metallb -f values.yaml --namespace metallb-system
-cd ..
-
-Проверяем корректность установки
-kubectl get pods --namespace metallb-system
+Конфигурируем плагин metallb
+minikube ip
 Результат
-NAME                                  READY   STATUS    RESTARTS   AGE
-metallb-controller-748756655f-fmq7z   1/1     Running   0          88s
-metallb-speaker-flwxb                 1/1     Running   0          88s
+192.168.49.2
+
+minikube addons configure metallb
+-- Enter Load Balancer Start IP: 192.168.49.10
+-- Enter Load Balancer End IP: 192.168.49.50
+    ▪ Using image metallb/speaker:v0.9.6
+    ▪ Using image metallb/controller:v0.9.6
+✅  metallb was successfully configured
 
 
 Результат - HTTP трафик может поступать в кластер minikube через LoadBalancer services
+
+======================================================================================================================
+
+Развертывание ядро Istio (istiod)
+======================================================================================================================
+curl -L https://istio.io/downloadIstio | sh -
+cd istio-1.11.3
+export PATH=$PWD/bin:$PATH
+istioctl x precheck
+istioctl install --set profile=minimal -y --set meshConfig.accessLogFile=/dev/stdout
+istioctl operator init --watchedNamespaces=eventbus
+cd ..
+kubectl label namespace eventbus istio-injection=enabled
+
+======================================================================================================================
+
+
 ======================================================================================================================
 
 Установка кластера rabbitmq
@@ -55,33 +64,45 @@ kubectl apply -f https://github.com/rabbitmq/messaging-topology-operator/release
 
 3. Развертывание кластера RabbitMQ
 3.1 Создание кластера и очередей
-helm install rabbitmq rabbitmq --namespace eventbus
-3.2 Создание пользователей
-kubectl apply -f ./rabbitmq/rabbitmqUsers.yaml --namespace eventbus
-======================================================================================================================
+kubectl apply -f rabbitmq/rabbitmqCluster.yaml
 
-Развертывание ядра Istio (istiod)
-======================================================================================================================
-curl -L https://istio.io/downloadIstio | sh -
-cd istio-1.11.3
-export PATH=$PWD/bin:$PATH
-istioctl x precheck
-istioctl install --set profile=minimal -y --set meshConfig.accessLogFile=/dev/stdout
-istioctl operator init --watchedNamespaces=eventbus
-cd ..
+Проверка старта кластера
+kubectl get pods --namespace eventbus
+Результат
+NAME                         READY   STATUS    RESTARTS   AGE
+rabbitmq-cluster1-server-0   1/1     Running   0          3m10s
 
-Развертывание istio ingress и egress в пространство eventbus
-kubectl label namespace eventbus istio-injection=enabled
-kubectl apply -f ./istio-gateway/istioGateway.yaml --namespace eventbus
+kubectl apply -f rabbitmq/rabbitmqQueue.yaml
+kubectl apply -f rabbitmq/rabbitmqUsers.yaml
 
-kubectl get svc --namespace eventbus
+Результат
+Создан кластер rabbitmq, пользователи и очереди
+
+Проверка
+kubectl port-forward service/rabbitmq-cluster1 15673:15672 --namespace eventbus
+затем в браузере http://localhost:15673
+Появится страница консоли администрирования rabbitmq. Зайти под admin/admin.
+Убедиться, что созданы пользователи admin и http-proxy (при этом будет еще один пользователь с автогенеренным именем)
+Убедиться, что созданы очереди rq1 и rq2
+
 ======================================================================================================================
 
 7. Получение доступа к админстративной консоли RabbitMQ
-В отельной консоли запустить
+В отдельной консоли запустить
 kubectl port-forward service/eventbus-ingressgateway-service 15673:80 --namespace eventbus
 
 Результат
 В браузере зайти на http://localhost:15673/
 Будет отображена стартовая страница консоли RabbitMQ
+
+Погасить через Ctrl+C kubectl port-forward
+======================================================================================================================
+
+
+Развертывание istio ingress и egress в пространство eventbus
+
+!!!kubectl apply -f ./istio-gateway/istioGateway.yaml --namespace eventbus
+
+!!!kubectl get svc --namespace eventbus
+
 

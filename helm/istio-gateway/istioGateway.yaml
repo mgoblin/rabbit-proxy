@@ -19,20 +19,21 @@ spec:
         # Enable gateway injection
         injectionTemplate: gateway
 
----
+#---
+#
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: eventbus-ingressgateway-service
+#spec:
+#  selector:
+#    istio: ingressgateway
+#  ports:
+#    - protocol: TCP
+#      port: 80
+#      targetPort: 8081
+#  type: LoadBalancer
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: eventbus-ingressgateway-service
-spec:
-  selector:
-    app: istio-ingressgateway
-    istio: ingressgateway
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8081
 
 ---
 
@@ -46,7 +47,7 @@ spec:
     app: istio-ingressgateway
   servers:
     - port:
-        number: 8081
+        number: 8080
         name: http
         protocol: HTTP
       hosts:
