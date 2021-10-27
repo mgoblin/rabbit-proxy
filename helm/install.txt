@@ -53,13 +53,17 @@ kubectl label namespace eventbus istio-injection=enabled
 ======================================================================================================================
 1. Установить cluster operator
 kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+Альтернатива:
+helm repo add sagikazarmark https://charts.sagikazarmark.dev
+helm install my-rabbitmq-operator sagikazarmark/rabbitmq-operator --version 0.0.3
+
 
 2. Установить topology operator
 2.1 Установка cert-manager
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.yaml
 2.2 Установка оператора
 kubectl apply -f https://github.com/rabbitmq/messaging-topology-operator/releases/latest/download/messaging-topology-operator-with-certmanager.yaml
-
+Установка требует запущенного cert-manager. бывает проходит не с первого раза. необходимо повторно запускать.
 Результат - развернуты CRD RabbitMQ
 
 3. Развертывание кластера RabbitMQ
@@ -87,22 +91,19 @@ kubectl port-forward service/rabbitmq-cluster1 15673:15672 --namespace eventbus
 
 ======================================================================================================================
 
-7. Получение доступа к админстративной консоли RabbitMQ
-В отдельной консоли запустить
-kubectl port-forward service/eventbus-ingressgateway-service 15673:80 --namespace eventbus
-
-Результат
-В браузере зайти на http://localhost:15673/
-Будет отображена стартовая страница консоли RabbitMQ
-
-Погасить через Ctrl+C kubectl port-forward
-======================================================================================================================
-
 
 Развертывание istio ingress и egress в пространство eventbus
 
-!!!kubectl apply -f ./istio-gateway/istioGateway.yaml --namespace eventbus
+kubectl apply -f ./istio-gateway/istioGateway.yaml --namespace eventbus
 
-!!!kubectl get svc --namespace eventbus
+Проверка работы
+kubectl get svc --namespace eventbus
+Результат
+NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                                      AGE
+ingressgateway            LoadBalancer   10.98.3.66      192.168.49.10   15021:31122/TCP,80:32225/TCP,443:32633/TCP   15s
+rabbitmq-cluster1         ClusterIP      10.101.188.55   <none>          5672/TCP,15672/TCP,15692/TCP                 4m52s
+rabbitmq-cluster1-nodes   ClusterIP      None            <none>          4369/TCP,25672/TCP                           4m52s
 
+В браузере зайти на external api ingressgateway - http://192.168.49.10
+Откроется страница консоли администратора RabbitMQ
 
