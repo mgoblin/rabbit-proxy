@@ -89,9 +89,8 @@ kubectl port-forward service/rabbitmq-cluster1 15673:15672 --namespace eventbus
 Убедиться, что созданы пользователи admin и http-proxy (при этом будет еще один пользователь с автогенеренным именем)
 Убедиться, что созданы очереди rq1 и rq2
 
+
 ======================================================================================================================
-
-
 Развертывание istio ingress и egress в пространство eventbus
 
 kubectl apply -f ./istio-gateway/istioGateway.yaml --namespace eventbus
@@ -107,3 +106,7 @@ rabbitmq-cluster1-nodes   ClusterIP      None            <none>          4369/TC
 В браузере зайти на external api ingressgateway - http://192.168.49.10
 Откроется страница консоли администратора RabbitMQ
 
+======================================================================================================================
+
+Развертывание rabbitmq http proxy
+helm install rabbit-http-proxy rabbit-http-proxy --namespace eventbus
