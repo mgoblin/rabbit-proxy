@@ -2,7 +2,6 @@ package ru.mg.rabbitmq.proxy.controllers;
 
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
-import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,8 +12,6 @@ import ru.mg.rabbitmq.proxy.services.RabbitService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @RestController
 public class RabbitController {

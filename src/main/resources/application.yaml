@@ -6,8 +6,26 @@ spring:
     template:
       mandatory: true
 
-    username: "***"
-    password: "***"
+    username: "http-proxy"
+    password: "passwd"
 
-    host: localhost
-    port: 5673
+    host: rabbitmq-cluster1
+    port: 5672
+
+management:
+    health:
+      livenessstate:
+        enabled: true
+      readinessstate:
+        enabled: true
+      enabled: true
+    endpoint:
+      health:
+        show-details: always
+    endpoints:
+      web:
+        exposure:
+          include: health
+      jmx:
+        exposure:
+          include: health

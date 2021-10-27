@@ -110,3 +110,4 @@ rabbitmq-cluster1-nodes   ClusterIP      None            <none>          4369/TC
 
 Развертывание rabbitmq http proxy
 helm install rabbit-http-proxy rabbit-http-proxy --namespace eventbus
+#helm uninstall rabbit-http-proxy --namespace eventbus
