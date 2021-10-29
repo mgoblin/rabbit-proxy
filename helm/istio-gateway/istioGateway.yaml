@@ -36,33 +36,24 @@ spec:
         protocol: HTTP
       hosts:
         - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: rabbit-http-gateway
+  namespace: eventbus
+spec:
+  selector:
+    app: istio-ingressgateway
+  servers:
+    - port:
+        number: 8081
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
 
 ---
-
-#apiVersion: networking.istio.io/v1alpha3
-#kind: VirtualService
-#metadata:
-#  name: rabbit-console-rule
-#  namespace: eventbus
-#spec:
-#  hosts:
-#    - "*"
-#  gateways:
-#    - eventbus/eventbus-gateway
-#  http:
-#    - match:
-#      - uri:
-#          prefix: /
-#      rewrite:
-#        uri: /
-#      route:
-#        - destination:
-#            port:
-#              number: 15672
-#            host: rabbitmq-cluster1.eventbus.svc.cluster.local
-#          weight: 100
-#
-#---
 
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -75,9 +66,28 @@ spec:
   gateways:
     - eventbus-gateway
   http:
+    - route:
+        - destination:
+            port:
+              number: 15672
+            host: rabbitmq-cluster1
+          weight: 100
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: rabbit-http-rule
+  namespace: eventbus
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - rabbit-http-gateway
+  http:
     - match:
-      - uri:
-          prefix: "/proxy"
+        - uri:
+            prefix: "/"
       rewrite:
         uri: "/"
       route:
@@ -86,9 +96,4 @@ spec:
               number: 8080
             host: rabbit-http-proxy
           weight: 100
-    - route:
-        - destination:
-            port:
-              number: 15672
-            host: rabbitmq-cluster1
-          weight: 100
+

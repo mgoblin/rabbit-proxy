@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: rabbit-http-svc
+spec:
+  ports:
+    - name: rabbit-http-svc-port
+      protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: istio-ingressgateway
+  type: LoadBalancer

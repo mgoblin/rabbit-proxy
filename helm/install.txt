@@ -110,8 +110,15 @@ rabbitmq-cluster1-nodes   ClusterIP      None            <none>          4369/TC
 
 Развертывание rabbitmq http proxy
 helm install rabbit-http-proxy rabbit-http-proxy --namespace eventbus
+kubectl apply -f rabbit-http-service/rabbit-http-service.yaml -n eventbus
 
 Проверка
+Узнаем IP адрес для обращения к rabbit-http-proxy
+kubectl get svc rabbit-http-svc -n eventbus
+Результат
+NAME              TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)        AGE
+rabbit-http-svc   LoadBalancer   10.99.114.4   192.168.49.11   80:32354/TCP   31m
+
 curl -X POST -d '{"test": 1}' -H "Content-Type: application/json" -vvvv http://192.168.49.10/proxy/rq1
 curl -vvvv http://192.168.49.10/proxy/rq1
 
