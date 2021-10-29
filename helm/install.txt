@@ -61,6 +61,15 @@ helm install my-rabbitmq-operator sagikazarmark/rabbitmq-operator --version 0.0.
 2. Установить topology operator
 2.1 Установка cert-manager
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.yaml
+Проверка
+kubectl get pods -n cert-manager
+
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-7dd5854bb4-hq5p4              1/1     Running   0          71s
+cert-manager-cainjector-64c949654c-8kgtf   1/1     Running   0          71s
+cert-manager-webhook-6b57b9b886-b9jcq      1/1     Running   0          71s
+
+
 2.2 Установка оператора
 kubectl apply -f https://github.com/rabbitmq/messaging-topology-operator/releases/latest/download/messaging-topology-operator-with-certmanager.yaml
 Установка требует запущенного cert-manager. бывает проходит не с первого раза. необходимо повторно запускать.
@@ -119,8 +128,8 @@ kubectl get svc rabbit-http-svc -n eventbus
 NAME              TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)        AGE
 rabbit-http-svc   LoadBalancer   10.99.114.4   192.168.49.11   80:32354/TCP   31m
 
-curl -X POST -d '{"test": 1}' -H "Content-Type: application/json" -vvvv http://192.168.49.10/proxy/rq1
-curl -vvvv http://192.168.49.10/proxy/rq1
+curl -X POST -d '{"test": 1}' -H "Content-Type: application/json" -vvvv http://192.168.49.11/rq1
+curl -vvvv http://192.168.49.11/rq1
 
 #helm uninstall rabbit-http-proxy --namespace eventbus
 TODO Health check реагирует только на http код 200 без анализа реального подключения к RabbitMQ

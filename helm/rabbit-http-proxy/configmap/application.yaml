@@ -1,0 +1,32 @@
+spring:
+  rabbitmq:
+    publisher-confirms: true
+    publisher-returns: true
+    publisher-confirm-type: CORRELATED
+    template:
+      mandatory: true
+
+    username: "http-proxy"
+    password: "passwd"
+
+    host: rabbitmq-cluster1.eventbus
+    port: 5672
+
+management:
+    health:
+      livenessstate:
+        enabled: true
+      readinessstate:
+        enabled: true
+      enabled: true
+    endpoint:
+      health:
+        show-details: always
+    endpoints:
+      web:
+        exposure:
+          include: health
+      jmx:
+        exposure:
+          include: health
+

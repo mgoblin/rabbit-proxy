@@ -29,12 +29,16 @@ test {
     useJUnitPlatform()
 }
 
-jib{
+jib {
     to {
         image = 'docker.io/mikegolovanov/rabbit-proxy'
         auth {
             username = '***'
             password = '***'
         }
+    }
+
+    container {
+        volumes = ['/config']
     }
 }
