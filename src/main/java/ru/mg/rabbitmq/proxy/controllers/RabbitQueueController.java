@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/queue")
-public class RabbitController {
+public class RabbitQueueController {
 
     @Autowired
     private RabbitService rabbitService;
