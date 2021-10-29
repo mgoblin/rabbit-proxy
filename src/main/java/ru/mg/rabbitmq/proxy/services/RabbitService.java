@@ -4,8 +4,6 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.mg.rabbitmq.proxy.controllers.PublishError;
 
@@ -36,5 +34,9 @@ public class RabbitService {
         } else {
             return Optional.empty();
         }
+    }
+
+    public Message getMessage(String queueName) {
+        return rabbitTemplate.receive(queueName, 1_000);
     }
 }

@@ -9,7 +9,7 @@ spring:
     username: "http-proxy"
     password: "passwd"
 
-    host: rabbitmq-cluster1
+    host: localhost
     port: 5672
 
 management:

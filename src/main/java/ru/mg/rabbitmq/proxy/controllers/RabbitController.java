@@ -14,10 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/queue")
 public class RabbitController {
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private RabbitService rabbitService;
@@ -25,7 +23,7 @@ public class RabbitController {
     @GetMapping(value = "/{queue}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMessage(@PathVariable("queue") String queue) {
 
-        Message message = rabbitTemplate.receive(queue, 1_000);
+        Message message = rabbitService.getMessage(queue);
         return message != null ?
             ResponseEntity.ok(new String(message.getBody())) :
             ResponseEntity.ok(null);
