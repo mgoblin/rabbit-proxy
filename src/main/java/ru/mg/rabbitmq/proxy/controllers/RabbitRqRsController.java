@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.mg.rabbitmq.proxy.services.RabbitService;
+import ru.mg.rabbitmq.proxy.services.RpcException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class RabbitRqRsController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> rpc(@PathVariable("queue") String queue, @RequestBody String messageBody) {
+    public ResponseEntity<?> rpc(@PathVariable("queue") String queue, @RequestBody String messageBody) throws RpcException  {
         Message replyMessage = rabbitService.rpc(queue, messageBody);
         String reply = replyMessage == null ? null : new String(replyMessage.getBody(), StandardCharsets.UTF_8);
         return ResponseEntity.of(Optional.ofNullable(reply));

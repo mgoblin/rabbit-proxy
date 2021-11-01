@@ -1,5 +1,6 @@
 package ru.mg.rabbitmq.proxy.services;
 
+import org.springframework.amqp.core.AmqpMessageReturnedException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -45,15 +46,19 @@ public class RabbitService {
         return rabbitTemplate.receive(queueName, 1_000);
     }
 
-    public Message rpc(String queueName, String messageBody) {
-        Message message = MessageBuilder
-                .withBody(messageBody.getBytes(StandardCharsets.UTF_8))
-                .setContentType(MediaType.APPLICATION_JSON_VALUE)
-                .setCorrelationId(UUID.randomUUID().toString())
-                .setReplyTo("amq.rabbitmq.reply-to")
-                .build();
+    public Message rpc(String queueName, String messageBody) throws RpcException {
+        try {
+            Message message = MessageBuilder
+                    .withBody(messageBody.getBytes(StandardCharsets.UTF_8))
+                    .setContentType(MediaType.APPLICATION_JSON_VALUE)
+                    .setCorrelationId(UUID.randomUUID().toString())
+                    .setReplyTo("amq.rabbitmq.reply-to")
+                    .build();
 
-        return rabbitTemplate.sendAndReceive("", queueName, message);
+            return rabbitTemplate.sendAndReceive("", queueName, message);
+        } catch (AmqpMessageReturnedException ex) {
+            throw new RpcException(ex);
+        }
     }
 
     @PostConstruct
