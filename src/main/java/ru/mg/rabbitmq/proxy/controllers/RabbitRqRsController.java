@@ -26,6 +26,8 @@ public class RabbitRqRsController {
     public ResponseEntity<?> rpc(@PathVariable("queue") String queue, @RequestBody String messageBody) throws RpcException  {
         Message replyMessage = rabbitService.rpc(queue, messageBody);
         String reply = replyMessage == null ? null : new String(replyMessage.getBody(), StandardCharsets.UTF_8);
-        return ResponseEntity.of(Optional.ofNullable(reply));
+        return reply == null ?
+                ResponseEntity.internalServerError().body("{'error': 'no response'}") :
+                ResponseEntity.ok(reply);
     }
 }

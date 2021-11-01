@@ -128,8 +128,8 @@ kubectl get svc rabbit-http-svc -n eventbus
 NAME              TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)        AGE
 rabbit-http-svc   LoadBalancer   10.99.114.4   192.168.49.11   80:32354/TCP   31m
 
-curl -X POST -d '{"test": 1}' -H "Content-Type: application/json" -vvvv http://192.168.49.11/rq1
-curl -vvvv http://192.168.49.11/rq1
+curl -X POST -d '{"test": 1}' -H "Content-Type: application/json" -vvvv http://192.168.49.11/queue/rq1
+curl -vvvv http://192.168.49.11/queue/rq1
 
 #helm uninstall rabbit-http-proxy --namespace eventbus
 TODO Health check реагирует только на http код 200 без анализа реального подключения к RabbitMQ
