@@ -1,13 +1,18 @@
 package ru.mg.rabbitmq.proxy.services;
 
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import ru.mg.rabbitmq.proxy.controllers.PublishError;
 
+import javax.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RabbitService {
@@ -38,5 +43,22 @@ public class RabbitService {
 
     public Message getMessage(String queueName) {
         return rabbitTemplate.receive(queueName, 1_000);
+    }
+
+    public Message rpc(String queueName, String messageBody) {
+        Message message = MessageBuilder
+                .withBody(messageBody.getBytes(StandardCharsets.UTF_8))
+                .setContentType(MediaType.APPLICATION_JSON_VALUE)
+                .setCorrelationId(UUID.randomUUID().toString())
+                .setReplyTo("amq.rabbitmq.reply-to")
+                .build();
+
+        return rabbitTemplate.sendAndReceive("", queueName, message);
+    }
+
+    @PostConstruct
+    public void postConstructRabbitTemplate() {
+        rabbitTemplate.setUserCorrelationId(true);
+        rabbitTemplate.setUseDirectReplyToContainer(true);
     }
 }
